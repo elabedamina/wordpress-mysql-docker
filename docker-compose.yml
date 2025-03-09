@@ -1,0 +1,44 @@
+version: '3' 
+services:
+  db-mysql:
+    image: mysql:8.0
+    container_name: my-mysql-container
+    volumes:
+      - mysql_data:/var/lib/mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: Password
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: testu
+      MYSQL_PASSWORD: testp
+    healthcheck:  
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - wp-network
+  wordpress:
+    depends_on:
+        db-mysql:
+          condition: service_healthy
+    image: wordpress:latest
+    container_name: wordpress-container
+    volumes:
+      - wp-data:/var/www/html
+    ports:
+      - "8080:80"
+    restart: always
+    environment:
+      WORDPRESS_DB_HOST: db-mysql:3306
+      WORDPRESS_DB_USER: testu
+      WORDPRESS_DB_PASSWORD: testp
+    networks:
+      - wp-network
+
+volumes:
+  mysql_data:
+  wp-data:
+
+networks:
+  wp-network:
